@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+    environment {
+        AWS_DEFAULT_REGION = "${params.region}"
+        EC2_INSTANCE_NAME = "${params.ec2_name}"
+        IP_LIST_DIR = '/var/lib/jenkins/IPListDir' // 파일을 저장할 디렉토리
+    }
+    stages {
+        stage('Get and Write Public IP') {
+            steps {
+                script {
+                    def instanceId = sh(
+                        returnStdout: true,
+                        script: "aws ec2 describe-instances --filters Name=tag:Name,Values=${EC2_INSTANCE_NAME} --query 'Reservations[0].Instances[0].InstanceId' --output text"
+                    ).trim()
+
+                    if (instanceId) {
+                        // 파일 경로 및 파일명 지정
+                        def filePath = "${IP_LIST_DIR}/${EC2_INSTANCE_NAME}_public_ip.txt"
+                        
+                        // IP 주소를 파일에 저장
+                        // 파일 저장에 실패해도 스크립트가 오류로 중단되지 않도록 try-catch 블록 사용
+                        try {
+                            sh "aws ec2 describe-instances --instance-ids ${instanceId} --query 'Reservations[0].Instances[0].PublicIpAddress' --output text > ${filePath}"
+                            // 저장된 파일을 artifact로 아카이브
+                        } catch (Exception e) {
+                            // 예외가 발생한 경우, 예외 객체를 캐치하고 로그로 남깁니다.
+                            echo "Exception occurred: ${e.message}"  // 예외 메시지 출력
+                            echo "Stack trace: ${e.toString()}"       // 예외의 스택 트레이스 출력
+                            // 파일 저장에 실패하면 경고 메시지 출력
+                            echo "Warning: Failed to save IP address to file."
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

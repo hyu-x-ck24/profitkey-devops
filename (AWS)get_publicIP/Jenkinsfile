@@ -3,7 +3,7 @@ pipeline {
     environment {
         AWS_DEFAULT_REGION = "${params.region}"
         EC2_INSTANCE_NAME = "${params.ec2_name}"
-        IP_LIST_DIR = '/var/lib/jenkins/IPListDir' // 파일을 저장할 디렉토리
+        IP_LIST_DIR = '/var/jenkins_home/IPListDir' // 파일을 저장할 디렉토리
     }
     stages {
         stage('Get and Write Public IP') {

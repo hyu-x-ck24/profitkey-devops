@@ -6,7 +6,7 @@ pipeline {
         DOCKER_REPOSITORY = "dreamjh/springtest"
         DOCKERHUB_CREDENTIALS = credentials('dockerhub_key')
         DOCKER_CONTAINER_NAME = 'dev-springtest-container'
-        EC2_INSTANCE_NAME = 'Dev-SpringServer'
+        EC2_INSTANCE_NAME = 'DevSpringServer'
         REGION = 'ap-northeast-2'
     }
     agent any

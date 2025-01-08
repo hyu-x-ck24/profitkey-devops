@@ -1,6 +1,6 @@
 pipeline {
     environment {
-        GIT_BRANCH = "dev"
+        GIT_BRANCH = "prod"
         GITHUB_REPOSITORY_NAME = "Springtest"
         GITHUB_REPOSITORY = "github.com/hyu-x-ck24/${env.GITHUB_REPOSITORY_NAME}.git"
         DOCKER_REPOSITORY = "dreamjh/springtest"

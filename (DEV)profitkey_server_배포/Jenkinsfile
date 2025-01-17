@@ -81,7 +81,7 @@ pipeline {
         }
         stage('Build Image') {
             steps {
-                sh "docker build -f ./demo/dev.Dockerfile -t ${env.DOCKER_REPOSITORY}:${BUILD_NUMBER} -t ${env.DOCKER_REPOSITORY}:latest ./"
+                sh "docker build -f ./dev.Dockerfile -t ${env.DOCKER_REPOSITORY}:${BUILD_NUMBER} -t ${env.DOCKER_REPOSITORY}:latest ./"
             }
         }
         stage('Deploy our image') { 

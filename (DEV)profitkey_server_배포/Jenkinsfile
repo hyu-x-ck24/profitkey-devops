@@ -75,7 +75,7 @@ pipeline {
         stage('Env Copy') {
             steps {
                 script {
-                    sh "cp /var/jenkins_home/envs/springtest/.env.* ."
+                    sh "cp /var/jenkins_home/envs/profitkey/profitkey.sh ."
                 }
             }
         }
@@ -99,6 +99,7 @@ pipeline {
                         sshagent(credentials: ['jenkins-ssh-key']) {
                             sh """
                             ssh -o StrictHostKeyChecking=no ubuntu@${target_IP} '
+                                ./profitkey.sh
                                 echo "${DOCKERHUB_PASS}" | docker login --username "${DOCKERHUB_USER}" --password-stdin
                                 docker system prune -af
                                 docker pull ${env.DOCKER_REPOSITORY}:${BUILD_NUMBER};

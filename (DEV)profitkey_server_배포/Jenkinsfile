@@ -99,6 +99,7 @@ pipeline {
                         sshagent(credentials: ['jenkins-ssh-key']) {
                             sh """
                             ssh -o StrictHostKeyChecking=no ubuntu@${target_IP} '
+                                echo 1234
                                 echo "확인: STOCK_APPLICATION_NAME = $STOCK_APPLICATION_NAME"
                                 echo "확인: STOCK_DATASOURCE_DRIVER = $STOCK_DATASOURCE_DRIVER"
                                 echo "${DOCKERHUB_PASS}" | docker login --username "${DOCKERHUB_USER}" --password-stdin

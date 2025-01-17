@@ -1,8 +1,8 @@
 pipeline {
     environment {
         GIT_BRANCH = "dev"
-        GITHUB_REPOSITORY_NAME = "Springtest"
-        GITHUB_REPOSITORY = "github.com/hyu-x-ck24/${env.GITHUB_REPOSITORY_NAME}.git"
+        GITHUB_REPOSITORY_NAME = "profit-key-backend"
+        GITHUB_REPOSITORY = "github.com/ProfitKey/${env.GITHUB_REPOSITORY_NAME}.git"
         DOCKER_REPOSITORY = "dreamjh/springtest"
         DOCKERHUB_CREDENTIALS = credentials('dockerhub_key')
         DOCKER_CONTAINER_NAME = 'dev-springtest-container'
@@ -99,7 +99,6 @@ pipeline {
                         sshagent(credentials: ['jenkins-ssh-key']) {
                             sh """
                             ssh -o StrictHostKeyChecking=no ubuntu@${target_IP} '
-                                ./profitkey.sh
                                 echo "${DOCKERHUB_PASS}" | docker login --username "${DOCKERHUB_USER}" --password-stdin
                                 docker system prune -af
                                 docker pull ${env.DOCKER_REPOSITORY}:${BUILD_NUMBER};

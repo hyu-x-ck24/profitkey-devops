@@ -122,7 +122,6 @@ pipeline {
                     webhookURL: "$DISCORD"
                 }
             }
-        }
         failure {
             withCredentials([string(credentialsId: 'Discord-Webhook', variable: 'DISCORD')]) {
                 discordSend description: "dev서버 배포 실패 정보", 
@@ -133,4 +132,4 @@ pipeline {
             }
         }
     }
-}   
+}

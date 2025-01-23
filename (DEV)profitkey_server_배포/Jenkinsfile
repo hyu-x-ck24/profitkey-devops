@@ -112,4 +112,25 @@ pipeline {
             }
         }
     }
+    post {
+        success {
+            withCredentials([string(credentialsId: 'Discord-Webhook', variable: 'DISCORD')]) {
+                discordSend description: "dev서버 배포 정보", 
+                    footer: "https://dev-server.profitkey.com 보러가기", 
+                    link: env.BUILD_URL, result: currentBuild.currentResult, 
+                    title: "🌟 백엔드(DEV)서버 배포 성공!!! 🌟", 
+                    webhookURL: "$DISCORD"
+                }
+            }
+        }
+        failure {
+            withCredentials([string(credentialsId: 'Discord-Webhook', variable: 'DISCORD')]) {
+                discordSend description: "dev서버 배포 실패 정보", 
+                    footer: "빌드가 가능한 상태일까요? ㅠㅠ 확인해주세요", 
+                    link: env.BUILD_URL, result: currentBuild.currentResult, 
+                    title: "🚨 백엔드(DEV)서버 배포 실패!!! 🚨", 
+                    webhookURL: "$DISCORD"
+            }
+        }
+    }
 }   

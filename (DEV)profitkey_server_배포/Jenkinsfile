@@ -116,7 +116,7 @@ pipeline {
         success {
             withCredentials([string(credentialsId: 'Discord-Webhook', variable: 'DISCORD')]) {
                 discordSend description: "dev서버 배포 정보", 
-                    footer: "https://dev-server.profitkey.com 보러가기", 
+                    footer: "https://dev-server.profitkey.click/swagger-ui/index.html 보러가기", 
                     link: env.BUILD_URL, result: currentBuild.currentResult, 
                     title: "🌟 백엔드(DEV)서버 배포 성공!!! 🌟", 
                     webhookURL: "$DISCORD"

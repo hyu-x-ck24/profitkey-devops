@@ -1,8 +1,8 @@
 pipeline {
     environment {
         GIT_BRANCH = "dev"
-        GITHUB_REPOSITORY_NAME = "profit-key-backend"
-        GITHUB_REPOSITORY = "github.com/ProfitKey/${env.GITHUB_REPOSITORY_NAME}.git"
+        GITHUB_REPOSITORY_NAME = "profit-backend"
+        GITHUB_REPOSITORY = "github.com/profit-key/${env.GITHUB_REPOSITORY_NAME}.git"
         DOCKER_REPOSITORY = "dreamjh/springtest"
         DOCKERHUB_CREDENTIALS = credentials('dockerhub_key')
         DOCKER_CONTAINER_NAME = 'dev-springtest-container'

@@ -3,7 +3,7 @@ pipeline {
         GIT_BRANCH = "dev"
         GITHUB_REPOSITORY_NAME = "profitkey-back"
         GITHUB_REPOSITORY = "github.com/profit-key/${env.GITHUB_REPOSITORY_NAME}.git"
-        DOCKER_REPOSITORY = "dreamjh/springtest"
+        DOCKER_REPOSITORY = "dreamjh/profitkey-back"
         DOCKERHUB_CREDENTIALS = credentials('dockerhub_key')
         DOCKER_CONTAINER_NAME = 'dev-springtest-container'
         EC2_INSTANCE_NAME = 'DevSpringServer'

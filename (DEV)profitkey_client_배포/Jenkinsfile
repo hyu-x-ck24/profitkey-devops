@@ -89,7 +89,6 @@ pipeline {
                 script {
                     sh "docker push ${env.DOCKER_REPOSITORY}:${BUILD_NUMBER}"
                     sh "docker push ${env.DOCKER_REPOSITORY}:latest"
-                    sh "docker push ${env.DOCKER_REPOSITORY}:${BUILD_NUMBER}_local"
                 }
             }
         }

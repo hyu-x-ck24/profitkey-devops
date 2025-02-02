@@ -1,0 +1,136 @@
+pipeline {
+    environment {
+        GIT_BRANCH = "main"
+        GITHUB_REPOSITORY_NAME = "profitkey-front"
+        GITHUB_REPOSITORY = "github.com/profit-key/${env.GITHUB_REPOSITORY_NAME}.git"
+        DOCKER_REPOSITORY = "dreamjh/profitkey-front"
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub_key')
+        DOCKER_CONTAINER_NAME = 'dev-client-container'
+        EC2_INSTANCE_NAME = 'DevSpringServer'
+        REGION = 'ap-northeast-2'
+    }
+    agent any
+    stages {
+        stage('Setup') {
+            steps {
+                script {
+                    IP_FILE_NAME = "${env.EC2_INSTANCE_NAME}_public_ip.txt"
+                    IP_FILE_PATH = "/var/jenkins_home/IPListDir/${IP_FILE_NAME}"
+                    target_IP = ""
+                }
+            }
+        }
+        stage('Call (AWS)get_publicIP Job') {
+            steps {
+                script {
+                    def ec2Job = build job: '(AWS)get_publicIP', 
+                                         wait: true,
+                                         parameters: [
+                                             string(name: 'region', value: env.REGION),
+                                             string(name: 'ec2_name', value: env.EC2_INSTANCE_NAME)
+                                         ]
+                    if (ec2Job.result != 'SUCCESS') {
+                        error "EC2 인스턴스 IP 찾기 작업 실패"
+                    }
+                }
+            }
+        }
+        stage('Read IP Address') {
+            steps {
+                script {
+                    if (fileExists(IP_FILE_PATH)) {
+                        target_IP = readFile(IP_FILE_PATH).trim()
+                        echo "IP 주소 검색됨: ${target_IP}"
+                    } else {
+                        error "IP 주소 파일을 찾을 수 없습니다."
+                    }
+                }
+            }
+        }
+        stage('Checkout') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'github_key', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                    git branch: env.GIT_BRANCH, url: "https://${GIT_USERNAME}:${GIT_PASSWORD}@${env.GITHUB_REPOSITORY}"
+                }
+            }
+        }
+        stage('Docker Hub Login') {
+            steps {
+                script {
+                    sh "echo ${env.DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${env.DOCKERHUB_CREDENTIALS_USR} --password-stdin"
+                }
+            }
+        }
+        stage('Cleaning up') {
+            steps {
+                script {
+                    def prevBuildNumber = Integer.parseInt(BUILD_NUMBER) - 1
+                    sh """
+                    docker rmi ${env.DOCKER_REPOSITORY}:${prevBuildNumber} || true
+                    docker system prune -af
+                    """
+                }
+            }
+        }
+        // stage('Env Copy') {
+        //     steps {
+        //         script {
+        //             sh "cp /var/jenkins_home/envs/profitkey/profitkey.sh ."
+        //         }
+        //     }
+        // }
+        stage('Build Image') {
+            steps {
+                sh "docker build -f ./dev.Dockerfile -t ${env.DOCKER_REPOSITORY}:${BUILD_NUMBER} -t ${env.DOCKER_REPOSITORY}:latest ./"
+            }
+        }
+        stage('Deploy our image') { 
+            steps { 
+                script {
+                    sh "docker push ${env.DOCKER_REPOSITORY}:${BUILD_NUMBER}"
+                    sh "docker push ${env.DOCKER_REPOSITORY}:latest"
+                    sh "docker push ${env.DOCKER_REPOSITORY}:${BUILD_NUMBER}_local"
+                }
+            }
+        }
+        stage('SSH Target Server Docker Login And Service Deploy') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub_key', passwordVariable: 'DOCKERHUB_PASS', usernameVariable: 'DOCKERHUB_USER')]) {
+                        sshagent(credentials: ['jenkins-ssh-key']) {
+                            sh """
+                            ssh -o StrictHostKeyChecking=no ubuntu@${target_IP} '
+                                echo "${DOCKERHUB_PASS}" | docker login --username "${DOCKERHUB_USER}" --password-stdin
+                                docker system prune -af
+                                docker pull ${env.DOCKER_REPOSITORY}:${BUILD_NUMBER};
+                                docker rm -f ${DOCKER_CONTAINER_NAME} || true
+                                docker run -itd --restart always --name ${DOCKER_CONTAINER_NAME} -p 4000:80 ${env.DOCKER_REPOSITORY}:${BUILD_NUMBER}
+                            '
+                            """
+                        }
+                    }
+                }
+            }
+        }
+    }
+    post {
+        success {
+            withCredentials([string(credentialsId: 'profitkey-client-log', variable: 'DISCORD')]) {
+                discordSend description: "프론트dev서버 배포 정보", 
+                    footer: "https://dev.profitkey.click/swagger-ui/index.html 보러가기", 
+                    link: env.BUILD_URL, result: currentBuild.currentResult, 
+                    title: "🌟 백엔드(DEV)서버 배포 성공!!! 🌟", 
+                    webhookURL: "$DISCORD"
+                }
+            }
+        failure {
+            withCredentials([string(credentialsId: 'profitkey-client-log', variable: 'DISCORD')]) {
+                discordSend description: "dev서버 배포 실패 정보", 
+                    footer: "빌드가 가능한 상태일까요? ㅠㅠ 확인해주세요", 
+                    link: env.BUILD_URL, result: currentBuild.currentResult, 
+                    title: "🚨 백엔드(DEV)서버 배포 실패!!! 🚨", 
+                    webhookURL: "$DISCORD"
+            }
+        }
+    }
+}

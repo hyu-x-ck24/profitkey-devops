@@ -116,19 +116,19 @@ pipeline {
     post {
         success {
             withCredentials([string(credentialsId: 'profitkey-client-log', variable: 'DISCORD')]) {
-                discordSend description: "프론트dev서버 배포 정보", 
+                discordSend description: "프론트(DEV)서버 배포 정보", 
                     footer: "https://dev.profitkey.click/swagger-ui/index.html 보러가기", 
                     link: env.BUILD_URL, result: currentBuild.currentResult, 
-                    title: "🌟 백엔드(DEV)서버 배포 성공!!! 🌟", 
+                    title: "🌟 프론트(DEV)서버 배포 성공!!! 🌟", 
                     webhookURL: "$DISCORD"
                 }
             }
         failure {
             withCredentials([string(credentialsId: 'profitkey-client-log', variable: 'DISCORD')]) {
-                discordSend description: "dev서버 배포 실패 정보", 
+                discordSend description: "프론트(DEV)서버 배포 실패 정보", 
                     footer: "빌드가 가능한 상태일까요? ㅠㅠ 확인해주세요", 
                     link: env.BUILD_URL, result: currentBuild.currentResult, 
-                    title: "🚨 백엔드(DEV)서버 배포 실패!!! 🚨", 
+                    title: "🚨 프론트(DEV)서버 배포 실패!!! 🚨", 
                     webhookURL: "$DISCORD"
             }
         }

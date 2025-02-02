@@ -116,7 +116,7 @@ pipeline {
         success {
             withCredentials([string(credentialsId: 'profitkey-client-log', variable: 'DISCORD')]) {
                 discordSend description: "프론트(DEV)서버 배포 정보", 
-                    footer: "https://dev.profitkey.click/swagger-ui/index.html 보러가기", 
+                    footer: "https://dev.profitkey.click 보러가기", 
                     link: env.BUILD_URL, result: currentBuild.currentResult, 
                     title: "🌟 프론트(DEV)서버 배포 성공!!! 🌟", 
                     webhookURL: "$DISCORD"
